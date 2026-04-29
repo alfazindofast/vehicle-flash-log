@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vehicle Software Flash Log</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e0dfd8;
+    --border2: #c8c7bf;
+    --text: #1a1a18;
+    --text2: #6b6a63;
+    --text3: #9e9d97;
+    --accent: #1a1a18;
+    --accent-bg: #1a1a18;
+    --accent-text: #ffffff;
+    --success-bg: #eaf5e9;
+    --success-border: #b0d9ad;
+    --success-text: #2d6b28;
+    --danger-bg: #fdf0ee;
+    --danger-text: #c0392b;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page {
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: normal;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .sub {
+    font-size: 14px;
+    color: var(--text2);
+    font-family: 'Courier New', monospace;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-title {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1.25rem;
+  }
+
+  .field { margin-bottom: 1.25rem; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  input, select {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    appearance: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6a63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .vehicle-search {
+    position: relative;
+  }
+
+  .vehicle-search input {
+    margin-bottom: 8px;
+  }
+
+  .vehicle-list {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .vehicle-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .vehicle-item:last-child { border-bottom: none; }
+  .vehicle-item:hover { background: var(--surface2); }
+  .vehicle-item.disabled {
+    color: var(--text3);
+    cursor: not-allowed;
+    background: var(--surface2);
+  }
+  .vehicle-item.disabled:hover { background: var(--surface2); }
+  .vehicle-item.selected { background: var(--accent-bg); color: var(--accent-text); }
+  
+  .done-badge {
+    font-size: 10px;
+    color: var(--success-text);
+    margin-left: 8px;
+  }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn {
+    width: 100%;
+    height: 44px;
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 0.25rem;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.99); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .success-msg {
+    display: none;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    color: var(--success-text);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .log-section { margin-top: 2rem; }
+
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .progress-wrap { display: flex; align-items: center; gap: 10px; }
+
+  .progress-label {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .progress-bar-bg {
+    width: 120px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .export-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .export-btn:hover { background: var(--surface2); color: var(--text); }
+
+  .empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--text3);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+  }
+
+  th {
+    text-align: left;
+    color: var(--text3);
+    font-weight: normal;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: var(--surface2); }
+
+  .vehicle-cell { font-size: 11px; word-break: break-all; }
+
+  .sw-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+
+  .arrow { color: var(--text3); margin: 0 4px; }
+
+  @media (max-width: 520px) {
+    .row-2 { grid-template-columns: 1fr; }
+    h1 { font-size: 22px; }
+    .progress-bar-bg { width: 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <p class="header-label">Fleet Management</p>
+    <h1>Vehicle Software Flash Log</h1>
+    <p class="sub">Record software flash operations &mdash; one entry per vehicle</p>
+  </header>
+
+  <div class="card">
+    <p class="card-title">New flash record</p>
+
+    <div class="field">
+      <label>Technician name</label>
+      <input type="text" id="who" placeholder="Enter your full name" autocomplete="name" />
+    </div>
+
+    <div class="field">
+      <label>Vehicle number</label>
+      <div class="vehicle-search">
+        <input type="text" id="vehicleSearch" placeholder="Search or scroll to select..." />
+        <div class="vehicle-list" id="vehicleList"></div>
+        <input type="hidden" id="vehicle" />
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>Previous software</label>
+        <select id="oldSw">
+          <option value="" disabled selected>Select version</option>
+          <option>86.00</option>
+          <option>86.01</option>
+          <option>86.02</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>New software</label>
+        <select id="newSw">
+          <option value="" disabled selected>Select version</option>
+          <option>86.00</option>
+          <option>86.01</option>
+          <option>86.02</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" onclick="submitForm()">Submit flash record</button>
+    <div class="success-msg" id="successMsg">&#10003; Flash record saved successfully</div>
+  </div>
+
+  <div class="log-section">
+    <div class="log-header">
+      <div class="progress-wrap">
+        <span class="progress-label" id="progressLabel">0 / 20 flashed</span>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+    </div>
+    <div id="logBody"><div class="empty-state">No records submitted yet</div></div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem; border-color: var(--border2);">
+    <p class="card-title">Admin: Manage vehicle list</p>
+    <div class="field">
+      <label>Paste vehicle numbers (one per line)</label>
+      <textarea id="bulkVehicles" rows="8" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:var(--radius);font-family:'Courier New',monospace;font-size:12px;resize:vertical;"></textarea>
+    </div>
+    <button class="btn" onclick="updateVehicles()">Update vehicle list</button>
+  </div>
+
+</div>
+
+<script>
+// CONFIGURATION: Vercel serverless function endpoint
+const SERVER_URL = '/api/flash-log';
+
+let VEHICLES = [
+  "P6EBE1ATD24000002","P6EBE1FYH24000153","P6EBE1FYH24000166","P6EBE1FYH24000179",
+  "P6EBE1FYH24000190","P6EBE1FYH24000158","P6EBE1FYH24000191","P6EBE1FYH24000159",
+  "P6EBE1FYH24000198","P6EBE1FYH24000183","P6EBE1FYH24000160","P6EBE1FYH24000169",
+  "P6EBE1FYH24000194","P6EBE1FYH24000195","P6EBE1FYH24000167","P6EBE1FYH24000161",
+  "P6EBE1FYH24000177","P6EBE1FYH24000156","P6EBE1FYH24000186","P6EBE1FYH24000189"
+];
+
+let records = [];
+let usedVehicles = new Set();
+let selectedVehicle = '';
+
+async function load() {
+  try {
+    const res = await fetch(SERVER_URL);
+    if (res.ok) {
+      const data = await res.json();
+      records = data.records || [];
+      usedVehicles = new Set(data.used || []);
+      if (data.vehicles && data.vehicles.length > 0) {
+        VEHICLES = data.vehicles;
+      }
+    }
+  } catch(e) {
+    console.error('Failed to load from server:', e);
+  }
+  VEHICLES.sort();
+  populateVehicleList();
+  renderLog();
+}
+
+async function save() {
+  try {
+    await fetch(SERVER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        records, 
+        used: [...usedVehicles],
+        vehicles: VEHICLES 
+      })
+    });
+  } catch(e) {
+    console.error('Failed to save to server:', e);
+    alert('Warning: Failed to save to server. Please try again or contact administrator.');
+  }
+}
+
+function populateVehicleList() {
+  const list = document.getElementById('vehicleList');
+  list.innerHTML = '';
+  
+  const searchTerm = document.getElementById('vehicleSearch').value.toLowerCase();
+  const filtered = VEHICLES.filter(v => v.toLowerCase().includes(searchTerm));
+  
+  filtered.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'vehicle-item' + (usedVehicles.has(v) ? ' disabled' : '') + (selectedVehicle === v ? ' selected' : '');
+    div.textContent = v;
+    if (usedVehicles.has(v)) {
+      const badge = document.createElement('span');
+      badge.className = 'done-badge';
+      badge.textContent = '✓ done';
+      div.appendChild(badge);
+    }
+    if (!usedVehicles.has(v)) {
+      div.onclick = () => selectVehicle(v);
+    }
+    list.appendChild(div);
+  });
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:1rem;">No vehicles found</div>';
+  }
+}
+
+function selectVehicle(v) {
+  selectedVehicle = v;
+  document.getElementById('vehicle').value = v;
+  document.getElementById('vehicleSearch').value = v;
+  populateVehicleList();
+}
+
+document.getElementById('vehicleSearch').addEventListener('input', populateVehicleList);
+
+async function submitForm() {
+  const who = document.getElementById('who').value.trim();
+  const vehicle = document.getElementById('vehicle').value;
+  const oldSw = document.getElementById('oldSw').value;
+  const newSw = document.getElementById('newSw').value;
+
+  if (!who || !vehicle || !oldSw || !newSw) {
+    alert('Please fill in all fields before submitting.');
+    return;
+  }
+  if (oldSw === newSw) {
+    alert('Previous and new software versions cannot be the same.');
+    return;
+  }
+
+  const now = new Date();
+  const when = now.toISOString().slice(0, 19).replace('T', ' ');
+
+  records.unshift({ who, when, vehicle, oldSw, newSw });
+  usedVehicles.add(vehicle);
+  await save();
+
+  document.getElementById('who').value = '';
+  document.getElementById('vehicle').value = '';
+  document.getElementById('vehicleSearch').value = '';
+  document.getElementById('oldSw').value = '';
+  document.getElementById('newSw').value = '';
+  selectedVehicle = '';
+  populateVehicleList();
+  renderLog();
+
+  const msg = document.getElementById('successMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3000);
+}
+
+function renderLog() {
+  const pct = VEHICLES.length > 0 ? (usedVehicles.size / VEHICLES.length * 100).toFixed(0) : 0;
+  document.getElementById('progressLabel').textContent = usedVehicles.size + ' / ' + VEHICLES.length + ' flashed';
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  const body = document.getElementById('logBody');
+  if (records.length === 0) {
+    body.innerHTML = '<div class="empty-state">No records submitted yet</div>';
+    return;
+  }
+
+  let html = '<div class="table-wrap"><table><thead><tr><th>Technician</th><th>Date &amp; Time</th><th>Vehicle</th><th>Software</th></tr></thead><tbody>';
+  records.forEach(r => {
+    html += `<tr>
+      <td>${esc(r.who)}</td>
+      <td style="white-space:nowrap">${esc(r.when)}</td>
+      <td class="vehicle-cell">${esc(r.vehicle)}</td>
+      <td style="white-space:nowrap"><span class="sw-badge">${esc(r.oldSw)}</span><span class="arrow">&#8594;</span><span class="sw-badge">${esc(r.newSw)}</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function exportCSV() {
+  if (records.length === 0) { alert('No records to export.'); return; }
+  const rows = [['Technician','Date & Time','Vehicle Number','Previous Software','New Software']];
+  records.forEach(r => rows.push([r.who, r.when, r.vehicle, r.oldSw, r.newSw]));
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'vehicle_flash_log_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+async function updateVehicles() {
+  const textarea = document.getElementById('bulkVehicles');
+  const newVehicles = textarea.value
+    .split('\n')
+    .map(v => v.trim())
+    .filter(v => v.length > 0);
+  
+  if (newVehicles.length === 0) {
+    alert('Please enter at least one vehicle number.');
+    return;
+  }
+  
+  if (!confirm(`This will replace the current list with ${newVehicles.length} vehicles. Continue?`)) {
+    return;
+  }
+  
+  VEHICLES = [...new Set(newVehicles)].sort();
+  await save();
+  populateVehicleList();
+  renderLog();
+  textarea.value = '';
+  alert('Vehicle list updated successfully!');
+}
+
+load();
+</script>
+</body>
+</html>

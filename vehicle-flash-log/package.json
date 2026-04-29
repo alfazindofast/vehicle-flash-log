@@ -1,0 +1,15 @@
+{
+  "name": "vehicle-flash-log",
+  "version": "1.0.0",
+  "description": "Vehicle software flash tracking application",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
