@@ -43,8 +43,7 @@ export default function Home() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Admin state
-  const [bulkVehicles, setBulkVehicles] = useState("");
+
 
   useEffect(() => {
     loadData();
@@ -132,27 +131,7 @@ export default function Home() {
     setTimeout(() => setShowSuccess(false), 3000);
   }
 
-  async function handleUpdateVehicles() {
-    const newVehicles = bulkVehicles
-      .split("\n")
-      .map((v) => v.trim())
-      .filter((v) => v.length > 0);
 
-    if (newVehicles.length === 0) {
-      alert("Please enter at least one vehicle number.");
-      return;
-    }
-
-    if (!confirm(`This will replace the current list with ${newVehicles.length} vehicles. Continue?`)) {
-      return;
-    }
-
-    const uniqueVehicles = [...new Set(newVehicles)].sort();
-    setVehicles(uniqueVehicles);
-    await saveData(records, usedVehicles, uniqueVehicles);
-    setBulkVehicles("");
-    alert("Vehicle list updated successfully!");
-  }
 
   function exportCSV() {
     if (records.length === 0) {
@@ -398,29 +377,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Admin Section */}
-        <div className="mt-8 bg-[var(--card)] border border-[var(--border-strong)] rounded-xl p-7">
-          <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-[var(--muted-foreground)] mb-5">
-            Admin: Manage vehicle list
-          </p>
-          <div className="mb-5">
-            <label className="block font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--muted-foreground)] mb-1.5">
-              Paste vehicle numbers (one per line)
-            </label>
-            <textarea
-              value={bulkVehicles}
-              onChange={(e) => setBulkVehicles(e.target.value)}
-              rows={8}
-              className="w-full p-3 border border-[var(--border-strong)] rounded-lg font-mono text-xs resize-y focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--ring)]"
-            />
-          </div>
-          <button
-            onClick={handleUpdateVehicles}
-            className="w-full h-11 bg-[var(--accent)] text-[var(--accent-foreground)] border-none rounded-lg font-mono text-[13px] tracking-[0.06em] uppercase cursor-pointer transition-opacity hover:opacity-85 active:scale-[0.99]"
-          >
-            Update vehicle list
-          </button>
-        </div>
+
       </div>
     </div>
   );
