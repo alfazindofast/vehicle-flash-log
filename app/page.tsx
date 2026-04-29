@@ -37,10 +37,19 @@ export default function Home() {
   // Form state
   const [who, setWho] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("");
+  const [vehicleSearch, setVehicleSearch] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [oldSw, setOldSw] = useState("");
   const [newSw, setNewSw] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Filter vehicles based on search input
+  const filteredVehicles = vehicleSearch.trim()
+    ? vehicles.filter((v) => 
+        v.toLowerCase().includes(vehicleSearch.toLowerCase()) && !usedVehicles.has(v)
+      )
+    : [];
 
   useEffect(() => {
     loadData();
@@ -109,6 +118,7 @@ export default function Home() {
     // Reset form
     setWho("");
     setSelectedVehicle("");
+    setVehicleSearch("");
     setOldSw("");
     setNewSw("");
     setIsSubmitting(false);
@@ -167,22 +177,41 @@ export default function Home() {
         </div>
 
         {/* Vehicle Selection */}
-        <div className="field">
+        <div className="field" style={{ position: "relative" }}>
           <label>Vehicle number</label>
-          <select
-            value={selectedVehicle}
-            onChange={(e) => setSelectedVehicle(e.target.value)}
-          >
-            <option value="" disabled>Select a vehicle</option>
-            {vehicles.map((v) => {
-              const isUsed = usedVehicles.has(v);
-              return (
-                <option key={v} value={v} disabled={isUsed}>
-                  {v}{isUsed ? "  [done]" : ""}
-                </option>
-              );
-            })}
-          </select>
+          <input
+            type="text"
+            value={vehicleSearch}
+            onChange={(e) => {
+              setVehicleSearch(e.target.value);
+              setSelectedVehicle("");
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder="Type to search vehicle..."
+          />
+          {selectedVehicle && (
+            <div className="selected-vehicle">
+              Selected: <strong>{selectedVehicle}</strong>
+            </div>
+          )}
+          {showSuggestions && filteredVehicles.length > 0 && (
+            <ul className="suggestions">
+              {filteredVehicles.map((v) => (
+                <li
+                  key={v}
+                  onMouseDown={() => {
+                    setSelectedVehicle(v);
+                    setVehicleSearch(v);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  {v}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Software Versions */}
