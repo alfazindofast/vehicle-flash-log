@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 interface FlashRecord {
   who: string;
@@ -37,13 +37,10 @@ export default function Home() {
   // Form state
   const [who, setWho] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("");
-  const [vehicleSearch, setVehicleSearch] = useState("");
   const [oldSw, setOldSw] = useState("");
   const [newSw, setNewSw] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-
 
   useEffect(() => {
     loadData();
@@ -84,16 +81,6 @@ export default function Home() {
     }
   }
 
-  const filteredVehicles = useMemo(() => {
-    const searchTerm = vehicleSearch.toLowerCase();
-    return vehicles.filter((v) => v.toLowerCase().includes(searchTerm));
-  }, [vehicles, vehicleSearch]);
-
-  function selectVehicle(v: string) {
-    setSelectedVehicle(v);
-    setVehicleSearch(v);
-  }
-
   async function handleSubmit() {
     if (!who.trim() || !selectedVehicle || !oldSw || !newSw) {
       alert("Please fill in all fields before submitting.");
@@ -122,7 +109,6 @@ export default function Home() {
     // Reset form
     setWho("");
     setSelectedVehicle("");
-    setVehicleSearch("");
     setOldSw("");
     setNewSw("");
     setIsSubmitting(false);
@@ -130,8 +116,6 @@ export default function Home() {
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
   }
-
-
 
   function exportCSV() {
     if (records.length === 0) {
@@ -151,233 +135,148 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-        <p className="font-mono text-sm text-[var(--muted-foreground)]">Loading...</p>
+      <div className="page flex items-center justify-center min-h-screen">
+        <p className="label">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4 py-8 pb-16">
-      <div className="max-w-[620px] mx-auto">
-        {/* Header */}
-        <header className="mb-10 pb-6 border-b border-[var(--border)]">
-          <p className="font-mono text-[11px] tracking-[0.12em] uppercase text-[var(--muted-foreground)] mb-2">
-            Fleet Management
-          </p>
-          <h1 className="text-[26px] font-serif font-normal text-[var(--foreground)] leading-tight mb-1.5">
-            Vehicle Software Flash Log
-          </h1>
-          <p className="font-mono text-sm text-[var(--muted-foreground)]">
-            Record software flash operations &mdash; one entry per vehicle
-          </p>
-        </header>
+    <div className="page">
+      {/* Header */}
+      <header className="header">
+        <p className="header-label">Fleet Management</p>
+        <h1>Vehicle Software Flash Log</h1>
+        <p className="sub">Record software flash operations &mdash; one entry per vehicle</p>
+      </header>
 
-        {/* New Flash Record Card */}
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-7 mb-6">
-          <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-[var(--muted-foreground)] mb-5">
-            New flash record
-          </p>
+      {/* New Flash Record Card */}
+      <div className="card">
+        <p className="card-title">New flash record</p>
 
-          {/* Technician Name */}
-          <div className="mb-5">
-            <label className="block font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--muted-foreground)] mb-1.5">
-              Technician name
-            </label>
-            <input
-              type="text"
-              value={who}
-              onChange={(e) => setWho(e.target.value)}
-              placeholder="Enter your full name"
-              className="w-full h-[42px] px-3.5 border border-[var(--border-strong)] rounded-lg bg-[var(--card)] text-[var(--foreground)] font-mono text-sm placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--ring)]"
-            />
-          </div>
+        {/* Technician Name */}
+        <div className="field">
+          <label>Technician name</label>
+          <input
+            type="text"
+            value={who}
+            onChange={(e) => setWho(e.target.value)}
+            placeholder="Enter your full name"
+            autoComplete="name"
+          />
+        </div>
 
-          {/* Vehicle Selection */}
-          <div className="mb-5">
-            <label className="block font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--muted-foreground)] mb-1.5">
-              Vehicle number
-            </label>
-            <input
-              type="text"
-              value={vehicleSearch}
-              onChange={(e) => {
-                setVehicleSearch(e.target.value);
-                setSelectedVehicle("");
-              }}
-              placeholder="Search or scroll to select..."
-              className="w-full h-[42px] px-3.5 border border-[var(--border-strong)] rounded-lg bg-[var(--card)] text-[var(--foreground)] font-mono text-sm placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--ring)] mb-2"
-            />
-            <div className="max-h-60 overflow-y-auto border border-[var(--border-strong)] rounded-lg bg-[var(--card)]">
-              {filteredVehicles.length === 0 ? (
-                <div className="p-4 text-center font-mono text-sm text-[var(--muted-foreground)]">
-                  No vehicles found
-                </div>
-              ) : (
-                filteredVehicles.map((v) => {
-                  const isUsed = usedVehicles.has(v);
-                  const isSelected = selectedVehicle === v;
-                  return (
-                    <div
-                      key={v}
-                      onClick={() => !isUsed && selectVehicle(v)}
-                      className={`px-3.5 py-2.5 font-mono text-[13px] border-b border-[var(--border)] last:border-b-0 transition-colors ${
-                        isSelected
-                          ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                          : isUsed
-                          ? "bg-[var(--muted)] text-[var(--muted-foreground)] cursor-not-allowed"
-                          : "hover:bg-[var(--muted)] cursor-pointer"
-                      }`}
-                    >
-                      {v}
-                      {isUsed && (
-                        <span className="text-[10px] text-[var(--success-foreground)] ml-2">
-                          &#10003; done
-                        </span>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Software Versions */}
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <div>
-              <label className="block font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--muted-foreground)] mb-1.5">
-                Previous software
-              </label>
-              <select
-                value={oldSw}
-                onChange={(e) => setOldSw(e.target.value)}
-                className="w-full h-[42px] px-3.5 pr-9 border border-[var(--border-strong)] rounded-lg bg-[var(--card)] text-[var(--foreground)] font-mono text-sm appearance-none focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--ring)]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6a63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "right 14px center",
-                }}
-              >
-                <option value="" disabled>Select version</option>
-                {SOFTWARE_VERSIONS.map((v) => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--muted-foreground)] mb-1.5">
-                New software
-              </label>
-              <select
-                value={newSw}
-                onChange={(e) => setNewSw(e.target.value)}
-                className="w-full h-[42px] px-3.5 pr-9 border border-[var(--border-strong)] rounded-lg bg-[var(--card)] text-[var(--foreground)] font-mono text-sm appearance-none focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--ring)]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6a63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "right 14px center",
-                }}
-              >
-                <option value="" disabled>Select version</option>
-                {SOFTWARE_VERSIONS.map((v) => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full h-11 bg-[var(--accent)] text-[var(--accent-foreground)] border-none rounded-lg font-mono text-[13px] tracking-[0.06em] uppercase cursor-pointer transition-opacity hover:opacity-85 active:scale-[0.99] disabled:opacity-35 disabled:cursor-not-allowed mt-1"
+        {/* Vehicle Selection */}
+        <div className="field">
+          <label>Vehicle number</label>
+          <select
+            value={selectedVehicle}
+            onChange={(e) => setSelectedVehicle(e.target.value)}
           >
-            {isSubmitting ? "Submitting..." : "Submit flash record"}
-          </button>
-
-          {/* Success Message */}
-          {showSuccess && (
-            <div className="mt-3 bg-[var(--success)] border border-[var(--success-border)] text-[var(--success-foreground)] rounded-lg py-3 px-4 font-mono text-[13px] text-center">
-              &#10003; Flash record saved successfully
-            </div>
-          )}
+            <option value="" disabled>Select a vehicle</option>
+            {vehicles.map((v) => {
+              const isUsed = usedVehicles.has(v);
+              return (
+                <option key={v} value={v} disabled={isUsed}>
+                  {v}{isUsed ? "  [done]" : ""}
+                </option>
+              );
+            })}
+          </select>
         </div>
 
-        {/* Log Section */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xs text-[var(--muted-foreground)]">
-                {usedVehicles.size} / {vehicles.length} flashed
-              </span>
-              <div className="w-[120px] h-1 bg-[var(--border)] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[var(--accent)] rounded-full transition-[width] duration-400"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-            <button
-              onClick={exportCSV}
-              className="font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--muted-foreground)] bg-transparent border border-[var(--border-strong)] rounded-lg px-3.5 py-1.5 cursor-pointer transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+        {/* Software Versions */}
+        <div className="row-2">
+          <div className="field">
+            <label>Previous software</label>
+            <select
+              value={oldSw}
+              onChange={(e) => setOldSw(e.target.value)}
             >
-              Export CSV
-            </button>
+              <option value="" disabled>Select version</option>
+              {SOFTWARE_VERSIONS.map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
           </div>
-
-          {records.length === 0 ? (
-            <div className="text-center py-10 px-4 font-mono text-[13px] text-[var(--muted-foreground)] border border-dashed border-[var(--border)] rounded-xl">
-              No records submitted yet
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse font-mono text-xs">
-                <thead>
-                  <tr>
-                    <th className="text-left font-normal text-[var(--muted-foreground)] tracking-[0.08em] uppercase py-2 px-2.5 border-b border-[var(--border)] whitespace-nowrap">
-                      Technician
-                    </th>
-                    <th className="text-left font-normal text-[var(--muted-foreground)] tracking-[0.08em] uppercase py-2 px-2.5 border-b border-[var(--border)] whitespace-nowrap">
-                      Date &amp; Time
-                    </th>
-                    <th className="text-left font-normal text-[var(--muted-foreground)] tracking-[0.08em] uppercase py-2 px-2.5 border-b border-[var(--border)] whitespace-nowrap">
-                      Vehicle
-                    </th>
-                    <th className="text-left font-normal text-[var(--muted-foreground)] tracking-[0.08em] uppercase py-2 px-2.5 border-b border-[var(--border)] whitespace-nowrap">
-                      Software
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r, i) => (
-                    <tr key={i} className="hover:bg-[var(--muted)]">
-                      <td className="py-2.5 px-2.5 border-b border-[var(--border)] align-top">
-                        {r.who}
-                      </td>
-                      <td className="py-2.5 px-2.5 border-b border-[var(--border)] align-top whitespace-nowrap">
-                        {r.when}
-                      </td>
-                      <td className="py-2.5 px-2.5 border-b border-[var(--border)] align-top text-[11px] break-all">
-                        {r.vehicle}
-                      </td>
-                      <td className="py-2.5 px-2.5 border-b border-[var(--border)] align-top whitespace-nowrap">
-                        <span className="inline-block px-2 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-[11px]">
-                          {r.oldSw}
-                        </span>
-                        <span className="text-[var(--muted-foreground)] mx-1">&#8594;</span>
-                        <span className="inline-block px-2 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-[11px]">
-                          {r.newSw}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="field">
+            <label>New software</label>
+            <select
+              value={newSw}
+              onChange={(e) => setNewSw(e.target.value)}
+            >
+              <option value="" disabled>Select version</option>
+              {SOFTWARE_VERSIONS.map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
+        {/* Submit Button */}
+        <button
+          className="btn"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Submitting..." : "Submit flash record"}
+        </button>
 
+        {/* Success Message */}
+        <div className={`success-msg ${showSuccess ? "show" : ""}`}>
+          &#10003; Flash record saved successfully
+        </div>
+      </div>
+
+      {/* Log Section */}
+      <div className="log-section">
+        <div className="log-header">
+          <div className="progress-wrap">
+            <span className="progress-label">
+              {usedVehicles.size} / {vehicles.length} flashed
+            </span>
+            <div className="progress-bar-bg">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+          <button className="export-btn" onClick={exportCSV}>
+            Export CSV
+          </button>
+        </div>
+
+        {records.length === 0 ? (
+          <div className="empty-state">No records submitted yet</div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Technician</th>
+                  <th>Date &amp; Time</th>
+                  <th>Vehicle</th>
+                  <th>Software</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((r, i) => (
+                  <tr key={i}>
+                    <td>{r.who}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{r.when}</td>
+                    <td className="vehicle-cell">{r.vehicle}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <span className="sw-badge">{r.oldSw}</span>
+                      <span className="arrow">&#8594;</span>
+                      <span className="sw-badge">{r.newSw}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
