@@ -44,7 +44,11 @@ export default function Home() {
         const vehicleNumberLower = vehicleNumber.toLowerCase();
         
         // Only include if search term is a continuous substring
-        return vehicleNumberLower.includes(searchTerm);
+        const isMatch = vehicleNumberLower.includes(searchTerm);
+        if (vehicleSearch === "1234" && !isMatch && vehicles.indexOf(v) < 5) {
+          console.log("[v0] Filtering '1234' - checking:", v, "vehicleNumber:", vehicleNumber, "isMatch:", isMatch);
+        }
+        return isMatch;
       })
       .sort((a, b) => {
         const vehicleNumberA = a.split(" - ")[0].toLowerCase();
