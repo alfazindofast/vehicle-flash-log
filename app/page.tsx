@@ -74,7 +74,10 @@ export default function Home() {
         setRecords(data.records || []);
         setUsedVehicles(new Set(data.used || []));
         if (data.vehicles && data.vehicles.length > 0) {
+          console.log("[v0] Loaded vehicles:", data.vehicles.length, "First few:", data.vehicles.slice(0, 5));
           setVehicles([...data.vehicles].sort());
+        } else {
+          console.log("[v0] No vehicles loaded from API");
         }
       }
     } catch (e) {

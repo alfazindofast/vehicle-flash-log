@@ -7,16 +7,6 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
-const DEFAULT_VEHICLES = [
-  "P6EBE1ATD24000002", "P6EBE1FYH24000153", "P6EBE1FYH24000166",
-  "P6EBE1FYH24000179", "P6EBE1FYH24000190", "P6EBE1FYH24000158",
-  "P6EBE1FYH24000191", "P6EBE1FYH24000159", "P6EBE1FYH24000198",
-  "P6EBE1FYH24000183", "P6EBE1FYH24000160", "P6EBE1FYH24000169",
-  "P6EBE1FYH24000194", "P6EBE1FYH24000195", "P6EBE1FYH24000167",
-  "P6EBE1FYH24000161", "P6EBE1FYH24000177", "P6EBE1FYH24000156",
-  "P6EBE1FYH24000186", "P6EBE1FYH24000189"
-];
-
 export async function GET() {
   try {
     const { data, error } = await supabase
@@ -29,11 +19,11 @@ export async function GET() {
       throw error;
     }
 
-    // Return stored data or defaults
+    // Return stored data (no defaults - vehicles should be loaded from Supabase)
     const responseData = data || {
       records: [],
       used: [],
-      vehicles: DEFAULT_VEHICLES
+      vehicles: []
     };
 
     return NextResponse.json(responseData);
