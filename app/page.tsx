@@ -37,10 +37,14 @@ export default function Home() {
   // Filter vehicles based on search input - search by vehicle number (part before dash)
   const filteredVehicles = vehicleSearch.trim()
     ? vehicles.filter((v) => {
+        if (usedVehicles.has(v)) return false;
         const vehicleNumber = v.split(" - ")[0];
         const searchTerm = vehicleSearch.toLowerCase();
-        return vehicleNumber.toLowerCase().includes(searchTerm) && !usedVehicles.has(v);
-      })
+        const vehicleNumberLower = vehicleNumber.toLowerCase();
+        
+        // Match if search term is a prefix or exact substring
+        return vehicleNumberLower.startsWith(searchTerm) || vehicleNumberLower.includes(searchTerm);
+      }).slice(0, 50)  // Limit to first 50 results for performance with 10k vehicles
     : [];
 
   useEffect(() => {
