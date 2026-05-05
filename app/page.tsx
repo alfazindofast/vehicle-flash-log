@@ -16,7 +16,7 @@ interface FlashData {
   vehicles: string[];
 }
 
-const SOFTWARE_VERSIONS = ["86.00", "86.01", "86.02"];
+const SOFTWARE_VERSIONS = ["86.00", "86.01", "86.02", "91.01", "91.02", "91.03"];
 
 export default function Home() {
   const [records, setRecords] = useState<FlashRecord[]>([]);
