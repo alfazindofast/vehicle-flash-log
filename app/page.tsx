@@ -16,22 +16,12 @@ interface FlashData {
   vehicles: string[];
 }
 
-const DEFAULT_VEHICLES = [
-  "P6EBE1ATD24000002", "P6EBE1FYH24000153", "P6EBE1FYH24000166",
-  "P6EBE1FYH24000179", "P6EBE1FYH24000190", "P6EBE1FYH24000158",
-  "P6EBE1FYH24000191", "P6EBE1FYH24000159", "P6EBE1FYH24000198",
-  "P6EBE1FYH24000183", "P6EBE1FYH24000160", "P6EBE1FYH24000169",
-  "P6EBE1FYH24000194", "P6EBE1FYH24000195", "P6EBE1FYH24000167",
-  "P6EBE1FYH24000161", "P6EBE1FYH24000177", "P6EBE1FYH24000156",
-  "P6EBE1FYH24000186", "P6EBE1FYH24000189"
-];
-
 const SOFTWARE_VERSIONS = ["86.00", "86.01", "86.02"];
 
 export default function Home() {
   const [records, setRecords] = useState<FlashRecord[]>([]);
   const [usedVehicles, setUsedVehicles] = useState<Set<string>>(new Set());
-  const [vehicles, setVehicles] = useState<string[]>(DEFAULT_VEHICLES);
+  const [vehicles, setVehicles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form state
@@ -44,11 +34,13 @@ export default function Home() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter vehicles based on search input
+  // Filter vehicles based on search input - search by vehicle number (part before dash)
   const filteredVehicles = vehicleSearch.trim()
-    ? vehicles.filter((v) => 
-        v.toLowerCase().includes(vehicleSearch.toLowerCase()) && !usedVehicles.has(v)
-      )
+    ? vehicles.filter((v) => {
+        const vehicleNumber = v.split(" - ")[0];
+        const searchTerm = vehicleSearch.toLowerCase();
+        return vehicleNumber.toLowerCase().includes(searchTerm) && !usedVehicles.has(v);
+      })
     : [];
 
   useEffect(() => {
