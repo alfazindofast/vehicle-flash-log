@@ -45,9 +45,7 @@ export default function Home() {
         
         // Only include if search term is a continuous substring
         const isMatch = vehicleNumberLower.includes(searchTerm);
-        if (vehicleSearch === "1234" && !isMatch && vehicles.indexOf(v) < 5) {
-          console.log("[v0] Filtering '1234' - checking:", v, "vehicleNumber:", vehicleNumber, "isMatch:", isMatch);
-        }
+        console.log("[v0] Filter check - search:", vehicleSearch, "vehicle:", v, "number:", vehicleNumber, "match:", isMatch);
         return isMatch;
       })
       .sort((a, b) => {
