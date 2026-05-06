@@ -344,6 +344,54 @@ tr:hover td {
   margin-top: 6px;
 }
 
+/* Location statistics */
+.location-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 1rem;
+  padding: 12px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+}
+
+.location-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.location-name {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.location-count {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--accent);
+  margin-left: 8px;
+}
+
+.records-note {
+  text-align: center;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--surface2);
+  border-radius: var(--radius);
+  margin-top: 12px;
+}
+
 @media (max-width: 520px) {
   .row-2 { 
     grid-template-columns: 1fr; 

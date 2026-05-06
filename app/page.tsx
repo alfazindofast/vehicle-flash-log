@@ -16,7 +16,8 @@ interface FlashData {
   vehicles: string[];
 }
 
-const SOFTWARE_VERSIONS = ["86.00", "86.01", "86.02", "91.01", "91.02", "91.03"];
+const OLD_SOFTWARE_VERSIONS = ["86.00", "86.01", "91.00", "91.02"];
+const NEW_SOFTWARE_VERSIONS = ["86.02", "91.03"];
 
 export default function Home() {
   const [records, setRecords] = useState<FlashRecord[]>([]);
@@ -45,7 +46,6 @@ export default function Home() {
         
         // Only include if search term is a continuous substring
         const isMatch = vehicleNumberLower.includes(searchTerm);
-        console.log("[v0] Filter check - search:", vehicleSearch, "vehicle:", v, "number:", vehicleNumber, "match:", isMatch);
         return isMatch;
       })
       .sort((a, b) => {
@@ -119,7 +119,9 @@ export default function Home() {
     setIsSubmitting(true);
 
     const now = new Date();
-    const when = now.toISOString().slice(0, 19).replace("T", " ");
+    // Convert to IST (UTC+5:30)
+    const istTime = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+    const when = istTime.toISOString().slice(0, 19).replace("T", " ");
 
     const newRecord: FlashRecord = { who: who.trim(), when, vehicle: selectedVehicle, oldSw, newSw };
     const newRecords = [newRecord, ...records];
@@ -158,6 +160,22 @@ export default function Home() {
   }
 
   const progressPercent = vehicles.length > 0 ? (usedVehicles.size / vehicles.length) * 100 : 0;
+
+  // Get location from vehicle string (middle part: "P6DSVFMSPBA002839 - BLR - Zypp")
+  const getLocation = (vehicle: string): string => {
+    const parts = vehicle.split(" - ");
+    return parts.length >= 2 ? parts[1] : "Unknown";
+  };
+
+  // Count flashed by location
+  const flashedByLocation: Record<string, number> = {};
+  records.forEach((r) => {
+    const location = getLocation(r.vehicle);
+    flashedByLocation[location] = (flashedByLocation[location] || 0) + 1;
+  });
+
+  // Display only last 10 records on site
+  const displayRecords = records.slice(0, 10);
 
   if (isLoading) {
     return (
@@ -239,7 +257,7 @@ export default function Home() {
               onChange={(e) => setOldSw(e.target.value)}
             >
               <option value="" disabled>Select version</option>
-              {SOFTWARE_VERSIONS.map((v) => (
+              {OLD_SOFTWARE_VERSIONS.map((v) => (
                 <option key={v} value={v}>{v}</option>
               ))}
             </select>
@@ -251,7 +269,7 @@ export default function Home() {
               onChange={(e) => setNewSw(e.target.value)}
             >
               <option value="" disabled>Select version</option>
-              {SOFTWARE_VERSIONS.map((v) => (
+              {NEW_SOFTWARE_VERSIONS.map((v) => (
                 <option key={v} value={v}>{v}</option>
               ))}
             </select>
@@ -295,32 +313,49 @@ export default function Home() {
         {records.length === 0 ? (
           <div className="empty-state">No records submitted yet</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Technician</th>
-                  <th>Date &amp; Time</th>
-                  <th>Vehicle</th>
-                  <th>Software</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.who}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{r.when}</td>
-                    <td className="vehicle-cell">{r.vehicle}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <span className="sw-badge">{r.oldSw}</span>
-                      <span className="arrow">&#8594;</span>
-                      <span className="sw-badge">{r.newSw}</span>
-                    </td>
-                  </tr>
+          <>
+            <div className="location-stats">
+              {Object.entries(flashedByLocation)
+                .sort((a, b) => b[1] - a[1])
+                .map(([location, count]) => (
+                  <div key={location} className="location-stat">
+                    <span className="location-name">{location}</span>
+                    <span className="location-count">{count}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Technician</th>
+                    <th>Date &amp; Time</th>
+                    <th>Vehicle</th>
+                    <th>Software</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayRecords.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.who}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{r.when}</td>
+                      <td className="vehicle-cell">{r.vehicle}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <span className="sw-badge">{r.oldSw}</span>
+                        <span className="arrow">&#8594;</span>
+                        <span className="sw-badge">{r.newSw}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {records.length > 10 && (
+              <div className="records-note">
+                Showing latest 10 of {records.length} total records
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
